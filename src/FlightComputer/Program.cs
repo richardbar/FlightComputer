@@ -20,4 +20,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-Console.WriteLine("Hello, World!");
+using System.Device.I2c;
+using Iot.Device.Bmxx80;
+using Iot.Device.Common;
+
+using var cancellationTokenSource = new CancellationTokenSource();
+Console.CancelKeyPress += (_, e) =>
+{
+    // ReSharper disable once AccessToDisposedClosure
+    cancellationTokenSource.Cancel();
+    e.Cancel = true; // Prevent the process from terminating.
+};
+
+using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+
+// ReSharper disable once InconsistentNaming
+using var i2cBus1 = I2cBus.Create(1);
+
+// ReSharper disable once InconsistentNaming
+using var bme280I2cDevice = i2cBus1.CreateDevice(Bmx280Base.SecondaryI2cAddress);
+using var bme280 = new Bme280(bme280I2cDevice);
+
+try
+{
+    while (await timer.WaitForNextTickAsync(cancellationTokenSource.Token))
+    {
+        var bme280Data = await bme280.ReadAsync();
+        var altitude = WeatherHelper.CalculateAltitude(bme280Data.Pressure!.Value);
+
+        Console.WriteLine($"Temperature: {bme280Data.Temperature}");
+        Console.WriteLine($"Pressure: {bme280Data.Pressure}");
+        Console.WriteLine($"Altitude: {altitude}");
+    }
+}
+catch (OperationCanceledException) { }
