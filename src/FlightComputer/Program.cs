@@ -1,4 +1,4 @@
-﻿// MIT License
+// MIT License
 // 
 // Copyright (c) 2024 Rikarnto Bariampa
 // 
@@ -20,9 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Device.I2c;
-using Iot.Device.Bmxx80;
-using Iot.Device.Common;
+using FlightComputer.Devices;
+using FlightComputer.Devices.Abstractions;
 
 using var cancellationTokenSource = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) =>
@@ -32,25 +31,21 @@ Console.CancelKeyPress += (_, e) =>
     e.Cancel = true; // Prevent the process from terminating.
 };
 
-using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
-
-// ReSharper disable once InconsistentNaming
-using var i2cBus1 = I2cBus.Create(1);
-
-// ReSharper disable once InconsistentNaming
-using var bme280I2cDevice = i2cBus1.CreateDevice(Bmx280Base.SecondaryI2cAddress);
-using var bme280 = new Bme280(bme280I2cDevice);
+using Bme280Device bme280Device = new();
+IPressureDevice pressureDevice = bme280Device;
+ITemperatureDevice temperatureDevice = bme280Device;
 
 try
 {
-    while (await timer.WaitForNextTickAsync(cancellationTokenSource.Token))
+    while (!cancellationTokenSource.Token.IsCancellationRequested)
     {
-        var bme280Data = await bme280.ReadAsync();
-        var altitude = WeatherHelper.CalculateAltitude(bme280Data.Pressure!.Value);
+        var pressure = await pressureDevice.ReadPressureAsync(cancellationTokenSource.Token);
+        var temperature = await temperatureDevice.ReadTemperatureAsync(cancellationTokenSource.Token);
 
-        Console.WriteLine($"Temperature: {bme280Data.Temperature}");
-        Console.WriteLine($"Pressure: {bme280Data.Pressure}");
-        Console.WriteLine($"Altitude: {altitude}");
+        Console.WriteLine("Pressure: " + ((pressure is null) ? "N/A" : pressure.Value.ToString()));
+        Console.WriteLine("Temperature: " + ((temperature is null) ? "N/A" : temperature.Value.ToString()));
+
+        await Task.Delay(1000, cancellationTokenSource.Token);
     }
 }
-catch (OperationCanceledException) { }
+catch (TaskCanceledException) { }

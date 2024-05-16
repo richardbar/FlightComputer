@@ -22,6 +22,7 @@
 
 using System.Device.I2c;
 using Iot.Device.Bmxx80;
+using Iot.Device.Bmxx80.ReadResult;
 using UnitsNet;
 using FlightComputer.Devices.Abstractions;
 
@@ -30,18 +31,49 @@ namespace FlightComputer.Devices;
 public sealed class Bme280Device : IPressureDevice, ITemperatureDevice, IDisposable
 {
     private static readonly I2cConnectionSettings I2CConnectionSettings = new(1, Bmx280Base.DefaultI2cAddress);
+    private readonly I2cDevice _i2CDevice = I2cDevice.Create(I2CConnectionSettings);
+    private readonly Bme280 _bme280;
+    private readonly TimeSpan _measurementDuration;
+    private DateTime _lastMeasurementTime = DateTime.MinValue;
+    private Bme280ReadResult _lastReadResult = new(null, null, null);
 
-    public Task<Pressure?> ReadPressureAsync(CancellationToken cancellationToken = default)
+    public Bme280Device()
     {
-        throw new NotImplementedException();
+        _bme280 = new Bme280(_i2CDevice); 
+        
+        var bme280MeasurementDurationInMs = _bme280.GetMeasurementDuration();
+        _measurementDuration = TimeSpan.FromMilliseconds(bme280MeasurementDurationInMs);
     }
 
-    public Task<Temperature?> ReadTemperatureAsync(CancellationToken cancellationToken = default)
+    public async Task<Pressure?> ReadPressureAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await EnsureMeasurementIsRecent();
+        return _lastReadResult.Pressure;
+    }
+
+    public async Task<Temperature?> ReadTemperatureAsync(CancellationToken cancellationToken = default)
+    {
+        await EnsureMeasurementIsRecent();
+        return _lastReadResult.Temperature;
     }
 
     public void Dispose()
     {
+        _bme280.Dispose();
+        _i2CDevice.Dispose();
+    }
+    
+    private async Task EnsureMeasurementIsRecent()
+    {
+        var timeSinceLastMeasurement = DateTime.UtcNow - _lastMeasurementTime;
+        var doNotNeedToRead = timeSinceLastMeasurement < _measurementDuration;
+        
+        if (doNotNeedToRead)
+        {
+            return;
+        }
+        
+        _lastReadResult = await _bme280.ReadAsync();
+        _lastMeasurementTime = DateTime.UtcNow;
     }
 }
