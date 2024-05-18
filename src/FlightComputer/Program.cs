@@ -22,6 +22,7 @@
 
 using FlightComputer.Devices;
 using FlightComputer.Devices.Abstractions;
+using FlightComputer.Devices.Mocking;
 
 using var cancellationTokenSource = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) =>
@@ -31,9 +32,18 @@ Console.CancelKeyPress += (_, e) =>
     e.Cancel = true; // Prevent the process from terminating.
 };
 
-using Bme280Device bme280Device = new();
-IPressureDevice pressureDevice = bme280Device;
-ITemperatureDevice temperatureDevice = bme280Device;
+Bme280Device? bme280Device = null;
+try
+{
+    bme280Device = new Bme280Device();
+}
+catch (Exception)
+{
+    // ignored
+}
+
+var pressureDevice = (IPressureDevice?)bme280Device ?? new RandomPressureMockingDevice();
+var temperatureDevice = (ITemperatureDevice?)bme280Device ?? new RandomTemperatureMockingDevice();
 
 try
 {
@@ -48,4 +58,11 @@ try
         await Task.Delay(1000, cancellationTokenSource.Token);
     }
 }
-catch (TaskCanceledException) { }
+catch (TaskCanceledException)
+{
+    // ignored
+}
+finally
+{
+    bme280Device?.Dispose();
+}
