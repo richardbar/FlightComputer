@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using System.Text.Json;
+using FlightComputer.Data;
 using FlightComputer.Devices;
 using FlightComputer.Devices.Abstractions;
 using FlightComputer.Devices.Mocking;
@@ -49,11 +51,13 @@ try
 {
     while (!cancellationTokenSource.Token.IsCancellationRequested)
     {
-        var pressure = await pressureDevice.ReadPressureAsync(cancellationTokenSource.Token);
-        var temperature = await temperatureDevice.ReadTemperatureAsync(cancellationTokenSource.Token);
+        var data = new FlightComputerData
+        {
+            Pressure = await pressureDevice.ReadPressureAsync(cancellationTokenSource.Token),
+            Temperature = await temperatureDevice.ReadTemperatureAsync(cancellationTokenSource.Token)
+        };
 
-        Console.WriteLine("Pressure: " + ((pressure is null) ? "N/A" : pressure.Value.ToString()));
-        Console.WriteLine("Temperature: " + ((temperature is null) ? "N/A" : temperature.Value.ToString()));
+        Console.WriteLine(JsonSerializer.Serialize(data));
 
         await Task.Delay(1000, cancellationTokenSource.Token);
     }
