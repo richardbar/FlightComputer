@@ -24,7 +24,7 @@ using UnitsNet;
 
 namespace FlightComputer.Contracts.Responses;
 
-public struct GetTemperatureResponse
+public sealed class GetTemperatureResponse
 {
     public required Guid RequestId { get; init; }
     

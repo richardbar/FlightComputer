@@ -25,9 +25,12 @@ using FlightComputer.Contracts.Responses;
 
 namespace FlightComputer.Contracts.Requests;
 
-public struct GetPressureRequest : IRequest<GetPressureResponse>
+public sealed class GetPressureRequest : IRequest<GetPressureResponse>
 {
-    public required Guid RequestId { get; init; } = Guid.NewGuid();
- 
-    public GetPressureRequest() { }
+    public static GetPressureRequest Instance { get; } = new GetPressureRequest
+    {
+        RequestId = Guid.Empty
+    };
+
+    public Guid RequestId { get; private init; } = Guid.NewGuid();
 }

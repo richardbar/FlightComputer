@@ -25,9 +25,12 @@ using FlightComputer.Contracts.Responses;
 
 namespace FlightComputer.Contracts.Requests;
 
-public struct GetTemperatureRequest : IRequest<GetTemperatureResponse>
+public sealed class GetTemperatureRequest : IRequest<GetTemperatureResponse>
 {
-    public required Guid RequestId { get; init; } = Guid.NewGuid();
- 
-    public GetTemperatureRequest() { }
+    public static GetTemperatureRequest Instance { get; } = new GetTemperatureRequest
+    {
+        RequestId = Guid.Empty
+    };
+
+    public Guid RequestId { get; private init; } = Guid.NewGuid();
 }

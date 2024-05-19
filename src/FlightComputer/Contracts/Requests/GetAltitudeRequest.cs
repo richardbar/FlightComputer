@@ -25,9 +25,12 @@ using FlightComputer.Contracts.Responses;
 
 namespace FlightComputer.Contracts.Requests;
 
-public struct GetAltitudeRequest : IRequest<GetAltitudeResponse>
+public sealed class GetAltitudeRequest : IRequest<GetAltitudeResponse>
 {
-    public required Guid RequestId { get; init; } = Guid.NewGuid();
- 
-    public GetAltitudeRequest() { }
+    public static GetAltitudeRequest Instance { get; } = new GetAltitudeRequest
+    {
+        RequestId = Guid.Empty
+    };
+
+    public Guid RequestId { get; private init; } = Guid.NewGuid();
 }
