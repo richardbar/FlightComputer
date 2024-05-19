@@ -23,15 +23,15 @@
 using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MediatR;
+using FlightComputer.Contracts.Requests;
 using FlightComputer.Data;
-using FlightComputer.Devices.Abstractions;
 
 namespace FlightComputer.Services;
 
 public sealed class FlightComputerService(
     ILogger<FlightComputerService> logger,
-    IPressureDevice pressureDevice,
-    ITemperatureDevice temperatureDevice) : IHostedService
+    IMediator mediator) : IHostedService
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private Task _backgroundTask = Task.CompletedTask;
@@ -72,8 +72,8 @@ public sealed class FlightComputerService(
             {
                 var data = new FlightComputerData
                 {
-                    Pressure = await pressureDevice.ReadPressureAsync(cancellationToken),
-                    Temperature = await temperatureDevice.ReadTemperatureAsync(cancellationToken)
+                    Pressure = (await mediator.Send(GetPressureRequest.Instance, cancellationToken)).Value,
+                    Temperature = (await mediator.Send(GetTemperatureRequest.Instance, cancellationToken)).Value
                 };
 
                 logger.LogInformation("Data: {Data}", JsonSerializer.Serialize(data));
