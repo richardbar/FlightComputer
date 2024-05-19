@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+using FlightComputer.HostedServices;
 using Microsoft.Extensions.DependencyInjection;
 using FlightComputer.Installers.Abstractions;
-using FlightComputer.Services;
 
 namespace FlightComputer.Installers;
 
@@ -31,7 +31,7 @@ public sealed class FlightComputerServiceInstaller : IInstaller
 {
     public bool Install(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddHostedService<FlightComputerService>();
+        serviceCollection.AddHostedService<FlightComputerHostedService>();
         
         return true;
     }

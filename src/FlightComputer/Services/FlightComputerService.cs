@@ -20,70 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Text.Json;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MediatR;
 using FlightComputer.Contracts.Requests;
 using FlightComputer.Contracts.Responses;
 
 namespace FlightComputer.Services;
 
-public sealed class FlightComputerService(
-    ILogger<FlightComputerService> logger,
-    IMediator mediator) : IHostedService, IRequestHandler<GetFlightComputerDataRequest, GetFlightComputerDataResponse>
+public sealed class FlightComputerService(IMediator mediator)
+    : IRequestHandler<GetFlightComputerDataRequest, GetFlightComputerDataResponse>
 {
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private Task _backgroundTask = Task.CompletedTask;
-
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        logger.LogInformation("{Service} is starting.", nameof(FlightComputerService));
-        _backgroundTask = Run(_cancellationTokenSource.Token);
-        logger.LogInformation("{Service} has started.", nameof(FlightComputerService));
-
-        return Task.CompletedTask;
-    }
-
-    public async Task StopAsync(CancellationToken cancellationToken)
-    {
-        logger.LogInformation("${Service} is stopping.", nameof(FlightComputerService));
-        await _cancellationTokenSource.CancelAsync();
-
-        try
-        {
-            await Task.WhenAny(_backgroundTask, Task.Delay(Timeout.Infinite, cancellationToken));
-        }
-        catch (OperationCanceledException)
-        {
-            logger.LogInformation("{Service} stop was cancelled.", nameof(FlightComputerService));
-        }
-
-        logger.LogInformation("{Service} is stopped.", nameof(FlightComputerService));
-    }
-
-    private async Task Run(CancellationToken cancellationToken)
-    {
-        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
-
-        try
-        {
-            while (await timer.WaitForNextTickAsync(cancellationToken))
-            {
-                var data = await mediator.Send(GetFlightComputerDataRequest.Instance, cancellationToken);
-
-                logger.LogInformation("Data: {Data}", JsonSerializer.Serialize(data));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            logger.LogInformation("{Service} cancellation was requested.", nameof(FlightComputerService));
-        }
-
-        logger.LogInformation("{Service} cleanup is completed.", nameof(FlightComputerService));
-    }
-
-    public async Task<GetFlightComputerDataResponse> Handle(GetFlightComputerDataRequest request, CancellationToken cancellationToken)
+    public async Task<GetFlightComputerDataResponse> Handle(GetFlightComputerDataRequest request,
+        CancellationToken cancellationToken)
     {
         return new GetFlightComputerDataResponse
         {
