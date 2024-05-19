@@ -24,7 +24,7 @@ using UnitsNet;
 
 namespace FlightComputer.Devices.Abstractions;
 
-public interface ITemperatureDevice
+public interface ITemperatureDevice : IDevice
 {
     /// <summary>
     /// Reads the temperature asynchronously. If the device is not connected or the reading fails, null is returned.

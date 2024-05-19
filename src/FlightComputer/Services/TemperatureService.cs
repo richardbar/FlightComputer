@@ -36,7 +36,7 @@ public readonly struct TemperatureService(ITemperatureDevice temperatureDevice)
         {
             RequestId = request.RequestId,
             Value = await temperatureDevice.ReadTemperatureAsync(cancellationToken) ?? throw new Exception(),
-            Timestamp = DateTime.UtcNow
+            Timestamp = temperatureDevice.GetLastMeasurementTime()
         };
     }
 }

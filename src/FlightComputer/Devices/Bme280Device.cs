@@ -28,7 +28,7 @@ using FlightComputer.Devices.Abstractions;
 
 namespace FlightComputer.Devices;
 
-public sealed class Bme280Device : IPressureDevice, ITemperatureDevice, IDisposable
+public sealed class Bme280Device : IDevice, IPressureDevice, ITemperatureDevice, IDisposable
 {
     private static readonly I2cConnectionSettings I2CConnectionSettings = new(1, Bmx280Base.DefaultI2cAddress);
     private readonly I2cDevice _i2CDevice = I2cDevice.Create(I2CConnectionSettings);
@@ -43,6 +43,11 @@ public sealed class Bme280Device : IPressureDevice, ITemperatureDevice, IDisposa
         
         var bme280MeasurementDurationInMs = _bme280.GetMeasurementDuration();
         _measurementDuration = TimeSpan.FromMilliseconds(bme280MeasurementDurationInMs);
+    }
+
+    public DateTime GetLastMeasurementTime()
+    {
+        return _lastMeasurementTime.ToUniversalTime();
     }
 
     public async Task<Pressure?> ReadPressureAsync(CancellationToken cancellationToken = default)

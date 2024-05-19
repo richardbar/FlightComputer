@@ -38,7 +38,7 @@ public readonly struct BarometricAltitudeService(IMediator mediator)
         {
             RequestId = request.RequestId,
             Value = WeatherHelper.CalculateAltitude(pressureResponse.Value),
-            Timestamp = DateTime.UtcNow
+            Timestamp = pressureResponse.Timestamp
         };
     }
 }

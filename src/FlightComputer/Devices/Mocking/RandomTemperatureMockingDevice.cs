@@ -30,10 +30,17 @@ public sealed class RandomTemperatureMockingDevice : ITemperatureDevice
     private static readonly Temperature MinTemperature = Temperature.FromDegreesCelsius(-5);
     private static readonly Temperature MaxTemperature = Temperature.FromDegreesCelsius(90);
     private readonly Random _random = new();
-
+    private DateTime _lastMeasurementTime = DateTime.MinValue;
+    
     public Task<Temperature?> ReadTemperatureAsync(CancellationToken cancellationToken = default)
     {
         var temperature = _random.NextDouble() * (MaxTemperature - MinTemperature) + MinTemperature;
+        _lastMeasurementTime = DateTime.UtcNow;
         return Task.FromResult<Temperature?>(temperature);
+    }
+
+    public DateTime GetLastMeasurementTime()
+    {
+        return _lastMeasurementTime.ToUniversalTime();
     }
 }

@@ -30,11 +30,18 @@ public sealed class RandomPressureMockingDevice : IPressureDevice
 {
     private static readonly Length MaxHeight = Length.FromMeters(3000);
     private readonly Random _random = new();
+    private DateTime _lastMeasurementTime = DateTime.MinValue;
 
     public Task<Pressure?> ReadPressureAsync(CancellationToken cancellationToken = default)
     {
         var height = _random.NextDouble() * MaxHeight;
         var pressure = WeatherHelper.CalculatePressure(WeatherHelper.MeanSeaLevel, height, Temperature.FromDegreesCelsius(25));
+        _lastMeasurementTime = DateTime.UtcNow;
         return Task.FromResult<Pressure?>(pressure);
+    }
+
+    public DateTime GetLastMeasurementTime()
+    {
+        return _lastMeasurementTime.ToUniversalTime();
     }
 }

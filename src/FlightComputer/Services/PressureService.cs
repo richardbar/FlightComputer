@@ -36,7 +36,7 @@ public readonly struct PressureService(IPressureDevice pressureDevice)
         {
             RequestId = request.RequestId,
             Value = await pressureDevice.ReadPressureAsync(cancellationToken) ?? throw new Exception(),
-            Timestamp = DateTime.UtcNow
+            Timestamp = pressureDevice.GetLastMeasurementTime()
         };
     }
 }
