@@ -20,31 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using FlightComputer.Devices;
-using FlightComputer.Devices.Abstractions;
-using FlightComputer.Devices.Mocking;
-using FlightComputer.Services;
+using FlightComputer.Installers.Abstractions;
 
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices(serviceCollection =>
     {
-        serviceCollection.AddHostedService<FlightComputerService>();
+        var installers = typeof(Program).Assembly.ExportedTypes
+            .Where(type => type.IsAssignableTo(typeof(IInstaller)) && type is { IsInterface: false, IsAbstract: false })
+            .Select(Activator.CreateInstance)
+            .Cast<IInstaller>();
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        foreach (var installer in installers)
         {
-            serviceCollection.AddSingleton<Bme280Device>();
-            serviceCollection.AddSingleton<IPressureDevice>(serviceProvider =>
-                serviceProvider.GetRequiredService<Bme280Device>());
-            serviceCollection.AddSingleton<ITemperatureDevice>(serviceProvider =>
-                serviceProvider.GetRequiredService<Bme280Device>());
-        }
-        else
-        {
-            serviceCollection.AddSingleton<IPressureDevice, RandomPressureMockingDevice>();
-            serviceCollection.AddSingleton<ITemperatureDevice, RandomTemperatureMockingDevice>();
+            installer.Install(serviceCollection);
         }
     });
 
