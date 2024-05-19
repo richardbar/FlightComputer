@@ -24,9 +24,9 @@ using System.Text.Json.Serialization;
 using Iot.Device.Common;
 using UnitsNet;
 
-namespace FlightComputer.Data;
+namespace FlightComputer.Contracts.Responses;
 
-public readonly struct FlightComputerData
+public sealed class GetFlightComputerDataResponse
 {
     [JsonIgnore]
     public required Pressure? Pressure { get; init; }

@@ -25,13 +25,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MediatR;
 using FlightComputer.Contracts.Requests;
-using FlightComputer.Data;
+using FlightComputer.Contracts.Responses;
 
 namespace FlightComputer.Services;
 
 public sealed class FlightComputerService(
     ILogger<FlightComputerService> logger,
-    IMediator mediator) : IHostedService
+    IMediator mediator) : IHostedService, IRequestHandler<GetFlightComputerDataRequest, GetFlightComputerDataResponse>
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private Task _backgroundTask = Task.CompletedTask;
@@ -70,11 +70,7 @@ public sealed class FlightComputerService(
         {
             while (await timer.WaitForNextTickAsync(cancellationToken))
             {
-                var data = new FlightComputerData
-                {
-                    Pressure = (await mediator.Send(GetPressureRequest.Instance, cancellationToken)).Value,
-                    Temperature = (await mediator.Send(GetTemperatureRequest.Instance, cancellationToken)).Value
-                };
+                var data = await mediator.Send(GetFlightComputerDataRequest.Instance, cancellationToken);
 
                 logger.LogInformation("Data: {Data}", JsonSerializer.Serialize(data));
             }
@@ -85,5 +81,14 @@ public sealed class FlightComputerService(
         }
 
         logger.LogInformation("{Service} cleanup is completed.", nameof(FlightComputerService));
+    }
+
+    public async Task<GetFlightComputerDataResponse> Handle(GetFlightComputerDataRequest request, CancellationToken cancellationToken)
+    {
+        return new GetFlightComputerDataResponse
+        {
+            Pressure = (await mediator.Send(GetPressureRequest.Instance, cancellationToken)).Value,
+            Temperature = (await mediator.Send(GetTemperatureRequest.Instance, cancellationToken)).Value
+        };
     }
 }
