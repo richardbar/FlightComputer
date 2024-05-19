@@ -20,53 +20,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Text.Json;
-using FlightComputer.Data;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using FlightComputer.Devices;
 using FlightComputer.Devices.Abstractions;
 using FlightComputer.Devices.Mocking;
+using FlightComputer.Services;
 
-using var cancellationTokenSource = new CancellationTokenSource();
-Console.CancelKeyPress += (_, e) =>
-{
-    // ReSharper disable once AccessToDisposedClosure
-    cancellationTokenSource.Cancel();
-    e.Cancel = true; // Prevent the process from terminating.
-};
-
-Bme280Device? bme280Device = null;
-try
-{
-    bme280Device = new Bme280Device();
-}
-catch (Exception)
-{
-    // ignored
-}
-
-var pressureDevice = (IPressureDevice?)bme280Device ?? new RandomPressureMockingDevice();
-var temperatureDevice = (ITemperatureDevice?)bme280Device ?? new RandomTemperatureMockingDevice();
-
-try
-{
-    while (!cancellationTokenSource.Token.IsCancellationRequested)
+var builder = Host.CreateDefaultBuilder(args)
+    .ConfigureServices(serviceCollection =>
     {
-        var data = new FlightComputerData
+        serviceCollection.AddHostedService<FlightComputerService>();
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            Pressure = await pressureDevice.ReadPressureAsync(cancellationTokenSource.Token),
-            Temperature = await temperatureDevice.ReadTemperatureAsync(cancellationTokenSource.Token)
-        };
+            serviceCollection.AddSingleton<Bme280Device>();
+            serviceCollection.AddSingleton<IPressureDevice>(serviceProvider =>
+                serviceProvider.GetRequiredService<Bme280Device>());
+            serviceCollection.AddSingleton<ITemperatureDevice>(serviceProvider =>
+                serviceProvider.GetRequiredService<Bme280Device>());
+        }
+        else
+        {
+            serviceCollection.AddSingleton<IPressureDevice, RandomPressureMockingDevice>();
+            serviceCollection.AddSingleton<ITemperatureDevice, RandomTemperatureMockingDevice>();
+        }
+    });
 
-        Console.WriteLine(JsonSerializer.Serialize(data));
+var app = builder.Build();
 
-        await Task.Delay(1000, cancellationTokenSource.Token);
-    }
-}
-catch (TaskCanceledException)
-{
-    // ignored
-}
-finally
-{
-    bme280Device?.Dispose();
-}
+await app.RunAsync();
