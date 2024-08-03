@@ -9,5 +9,6 @@
     <ItemGroup>
         <ProjectReference Include="..\FlightComputer.Contracts\FlightComputer.Contracts.csproj" />
         <ProjectReference Include="..\FlightComputer.Devices.Abstractions\FlightComputer.Devices.Abstractions.csproj" />
+        <ProjectReference Include="..\FlightComputer.Devices.Mocking\FlightComputer.Devices.Mocking.csproj" />
     </ItemGroup>
 </Project>
