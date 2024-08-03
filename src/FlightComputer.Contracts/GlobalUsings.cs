@@ -22,3 +22,5 @@
 
 global using MediatR;
 global using UnitsNet;
+
+global using FlightComputer.Contracts.Responses;
