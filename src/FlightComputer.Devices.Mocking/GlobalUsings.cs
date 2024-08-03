@@ -21,5 +21,6 @@
 // SOFTWARE.
 
 global using UnitsNet;
+global using UnitsNet.Units;
 
 global using FlightComputer.Devices.Abstractions;
