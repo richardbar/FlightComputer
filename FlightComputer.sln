@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B5943B4D-153
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightComputer", "src\FlightComputer\FlightComputer.csproj", "{D1DEBE27-0569-428D-BDFC-0C1C77079456}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlightComputer.Contracts", "src\FlightComputer.Contracts\FlightComputer.Contracts.csproj", "{32EB9582-15C6-4A90-937C-3C3C9D723E7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,11 +19,16 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D1DEBE27-0569-428D-BDFC-0C1C77079456} = {B5943B4D-153F-4353-8763-C88F480048ED}
+		{32EB9582-15C6-4A90-937C-3C3C9D723E7B} = {B5943B4D-153F-4353-8763-C88F480048ED}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D1DEBE27-0569-428D-BDFC-0C1C77079456}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1DEBE27-0569-428D-BDFC-0C1C77079456}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1DEBE27-0569-428D-BDFC-0C1C77079456}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1DEBE27-0569-428D-BDFC-0C1C77079456}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32EB9582-15C6-4A90-937C-3C3C9D723E7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32EB9582-15C6-4A90-937C-3C3C9D723E7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32EB9582-15C6-4A90-937C-3C3C9D723E7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32EB9582-15C6-4A90-937C-3C3C9D723E7B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
